@@ -1,0 +1,28 @@
+{
+    "name": "What's Nearby",
+    "skillMetadata": {
+        "sections": [
+            {
+                "name": "Here Place API",
+                "fields": [
+                    {
+                        "type": "label",
+                        "label": "What's Nearby utilizes HERE as the locations & places provider, for HERE free API key registeration visit <a href='https://developer.here.com'>https://developer.here.com</a><br></br>"
+                    },
+                    {
+                        "name": "app_id",
+                        "type": "text",
+                        "label": "APP ID",
+                        "value": "c8OJFSMPYCg6Q1IYG01P"
+                    },
+                    {
+                        "name": "app_code",
+                        "type": "text",
+                        "label": "APP CODE",
+                        "value": "6iK0piwLxIpbn2jPaj8QKQ"
+                    }
+                ]
+            }
+        ]
+    }
+} 
