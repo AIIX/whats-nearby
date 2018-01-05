@@ -20,6 +20,7 @@ LOGGER = getLogger(__name__)
 class WhatsNearbySkill(MycroftSkill):
     def __init__(self):
         super(WhatsNearbySkill, self).__init__(name="WhatsNearbySkill")
+        self.places_index = dirname(__file__) + '/places.json'
         self.app_id = self.settings['app_id']
         self.app_code = self.settings['app_code']
 
@@ -34,14 +35,14 @@ class WhatsNearbySkill(MycroftSkill):
     def handle_search_nearby_places_intent(self, message):
         utterance = message.data.get('utterance').lower()
         utterance = utterance.replace(message.data.get('SearchPlacesKeyword'), '')
-        searchString = utterance
+        searchString = utterance.replace(" ", "")
         
         method = "GET"
         url = "https://places.demo.api.here.com/places/v1/discover/explore"
         getcords = self.getLocation()
         getlat = getcords['location']['lat']
         getlong = getcords['location']['lng']
-        cat = searchString
+        cat = self.filterCat(searchString)
         data = "?at={0},{1}&cat={2}&app_id={3}&app_code={4}".format(getlat, getlong, cat, self.app_id, self.app_code)
         response = requests.request(method,url+data)
         self.speak("Following information was found");
@@ -51,14 +52,18 @@ class WhatsNearbySkill(MycroftSkill):
             
         postdata = {}
         ifaces = []
+        flbmode = {
+        "lacf": "false",
+        "ipf": "true"
+        }
+        postdata['fallbacks'] = flbmode
         postdata['wifiAccessPoints'] = ifaces
         wireless = Wireless()
         wintf = wireless.interface()
         setwintf = 'iwlist {0} scan'.format(wintf) 
-        wlist = subprocess.Popen([setwintf], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True) 
-        out, err = wlist.communicate()
+        wlist = subprocess.Popen([setwintf], stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True, shell=True) 
 
-        for line in out:
+        for line in wlist.stdout:
             if "Address" in line:
                 iface = {}
                 key = line.split('Address: ')[1].strip()
@@ -69,11 +74,17 @@ class WhatsNearbySkill(MycroftSkill):
                 iface['signalStrength'] = int(signal)
             if "ESSID" in line:
                 essid = line.split(':')[1].strip().replace('"', '')
+            if "Frequency" in line:
+                frequencyStr = line.split(':')[1].split(' GHz')[0]
+                frequency = int(float(frequencyStr)*1000)
+                channel = int(line.split('(Channel ')[1].replace(')',''))
+                iface['channel'] = channel
+                iface['frequency'] = frequency
 
         postdata['wifiAccessPoints'].sort(
             key=lambda x: x['signalStrength'], reverse=True)
 
-        del postdata['wifiAccessPoints'][3:]
+        del postdata['wifiAccessPoints'][5:]
         
         url = 'https://location.services.mozilla.com/v1/geolocate?key=test'
         print json.dumps(postdata, sort_keys=True, indent=4, separators=(',', ': '))
@@ -81,8 +92,19 @@ class WhatsNearbySkill(MycroftSkill):
         getlocresult = json.loads(r.text)
 
         return getlocresult;
-    
-
+   
+   
+    def filterCat(self, keywords):
+        keyword = keywords.lower()
+        with open(self.places_index) as json_data:
+            d = json.load(json_data)
+            for key, value in d.items():
+                if keyword in value:
+                    return key
+                else:
+                    return keyword
+        
+        
     def stop(self):
         pass
 
