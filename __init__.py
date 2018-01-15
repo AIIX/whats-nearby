@@ -44,9 +44,10 @@ class WhatsNearbySkill(MycroftSkill):
         getlong = getcords['location']['lng']
         cat = self.filterCat(searchString)
         data = "?at={0},{1}&cat={2}&app_id={3}&app_code={4}".format(getlat, getlong, cat, self.app_id, self.app_code)
+        LOGGER.info(url+data)
         response = requests.request(method,url+data)
         self.speak("Following information was found");
-        self.enclosure.ws.emit(Message("visualObject", {'desktop': {'data': response.text}}))
+        self.enclosure.ws.emit(Message("placesObject", {'desktop': {'data': response.text}}))
         
     def getLocation(self):
             
@@ -98,11 +99,33 @@ class WhatsNearbySkill(MycroftSkill):
         keyword = keywords.lower()
         with open(self.places_index) as json_data:
             d = json.load(json_data)
-            for key, value in d.items():
-                if keyword in value:
-                    return key
-                else:
-                    return keyword
+            if keyword in d["eat-drink"]:
+                return "eat-drink"
+            elif keyword in d["shopping"]:
+                return "shopping"
+            elif keyword in d["toilet-rest-area"]:
+                return "toilet-rest-area"
+            elif keyword in d["natural-geographical"]:
+                return "natural-geographical"
+            elif keyword in d["petrol-station"]:
+                return "petrol-station"
+            elif keyword in d["hospital-health-care-facility"]:
+                return "hospital-health-care-facility"
+            elif keyword in d["atm-bank-exchange"]:
+                return "atm-bank-exchange"
+            elif keyword in d["administrative-areas-buildings"]:
+                return "administrative-areas-buildings"
+            elif keyword in d["going-out"]:
+                return "going-out"
+            elif keyword in d["sights-museums"]:
+                return "sights-museums"
+            elif keyword in d["accommodation"]:
+                return "accommodation"
+            elif keyword in d["transport"]:
+                return "transport"
+            else:
+                self.speak("Could not find {0} nearby".format(keyword))
+                return keyword
         
         
     def stop(self):
