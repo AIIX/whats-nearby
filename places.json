@@ -46,6 +46,8 @@
     "pizzerias",
     "pubs",
     "pub",
+    "restaurant",
+    "restaurants",
     "soda fountain",
     "watering hole",
     "cafe",
@@ -242,6 +244,7 @@
     ],
   "hospital-health-care-facility":[
     "healthcare",
+    "hospital",
     "hospitals",
     "medical services",
     "doctors",
