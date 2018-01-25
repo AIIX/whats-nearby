@@ -43,11 +43,13 @@ class WhatsNearbySkill(MycroftSkill):
         getlat = getcords['location']['lat']
         getlong = getcords['location']['lng']
         cat = self.filterCat(searchString)
+	sendappid = str(self.app_id)
+	sendappcode = str(self.app_code)
         data = "?at={0},{1}&cat={2}&app_id={3}&app_code={4}".format(getlat, getlong, cat, self.app_id, self.app_code)
         LOGGER.info(url+data)
         response = requests.request(method,url+data)
         self.speak("Following information was found");
-        self.enclosure.ws.emit(Message("placesObject", {'desktop': {'data': response.text}}))
+        self.enclosure.ws.emit(Message("placesObject", {'desktop': {'data': response.text, 'locallat': getlat, 'locallong': getlong, 'appid': sendappid, 'appcode': sendappcode}}))
         
     def getLocation(self):
             
