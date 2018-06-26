@@ -6,7 +6,8 @@ import sys
 import subprocess
 import json
 import requests
-from wireless import Wireless
+import pyric            
+import pyric.pyw as pyw
 from adapt.intent import IntentBuilder
 from os.path import join, dirname
 from string import Template
@@ -32,7 +33,6 @@ class WhatsNearbySkill(MycroftSkill):
         self.places_index = dirname(__file__) + '/places.json'
         self.app_id = self.settings['app_id']
         self.app_code = self.settings['app_code']
-        self.load_data_files(dirname(__file__))
          
     @intent_handler(IntentBuilder("NearbyPlaces").require("SearchPlacesKeyword").build())
     def handle_search_nearby_places_intent(self, message):
@@ -70,9 +70,9 @@ class WhatsNearbySkill(MycroftSkill):
         }
         postdata['fallbacks'] = flbmode
         postdata['wifiAccessPoints'] = ifaces
-        wireless = Wireless()
-        wintf = wireless.interface()
-        setwintf = 'iwlist {0} scan'.format(wintf) 
+        wintf = pyw.winterfaces()
+        selectintf = wintf[0]
+        setwintf = 'iwlist {0} scan'.format(selectintf) 
         wlist = subprocess.Popen([setwintf], stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True, shell=True) 
 
         for line in wlist.stdout:
