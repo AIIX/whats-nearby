@@ -1,0 +1,7 @@
+{
+  "utterance": "nearby",
+  "intent_type": "NearbyPlaces",
+  "intent": {
+    "SearchPlacesKeyword": ""
+  }
+}

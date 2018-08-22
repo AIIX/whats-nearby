@@ -46,7 +46,9 @@ class WhatsNearbySkill(MycroftSkill):
         method = "GET"
         url = "https://places.demo.api.here.com/places/v1/discover/explore"
         getcords = self.getLocation()
+        global getlat
         getlat = getcords['location']['lat']
+        global getlong
         getlong = getcords['location']['lng']
         cat = self.filterCat(searchString)
         sendappid = str(self.app_id)
@@ -57,7 +59,28 @@ class WhatsNearbySkill(MycroftSkill):
         if cat is not False:
             self.speak("Following information was found");
             self.enclosure.ws.emit(Message("placesObject", {'desktop': {'data': response.text, 'locallat': getlat, 'locallong': getlong, 'appid': sendappid, 'appcode': sendappcode}}))
-        
+        global getPlaceItems
+        getPlaceItems = json.loads(response.text)
+    
+    @intent_handler(IntentBuilder("ShareLocation").require("ShareLocationKeyword").build())
+    def handle_share_place_tophone_intent(self, message):
+        """
+        Handle Share Location To Phone
+        """
+        utterance = message.data.get('utterance').lower()
+        utterance = utterance.replace(message.data.get('ShareLocationKeyword'), "")
+        searchString = utterance.replace (" ", "")
+        getPOI = self.getPlaceLocation(searchString)
+        addressUrl = "http://maps.google.com/maps?saddr={0},{1}&daddr={2},{3}".format(getlat, getlong, getPOI[0], getPOI[1])
+        shareToPhoneCmd = 'mycroft:\send url to phone {0}'.format(addressUrl)
+        res = subprocess.call(("kioclient5", "cat", shareToPhoneCmd))
+    
+    def getPlaceLocation(self, search_place):
+        for place in getPlaceItems['results']['items']:
+            LOGGER.info(place['title'].lower().replace(" ", ""))
+            if search_place.lower() == place['title'].lower().replace(" ", ""):
+                return place['position']
+    
     def getLocation(self):
         """
         Get location from Wlan and WifiAccessPoints for Mozilla Location Services
@@ -140,7 +163,7 @@ class WhatsNearbySkill(MycroftSkill):
                 self.speak("Could not find {0}".format(keyword))
                 return False
         
-        
+    
     def stop(self):
         """
         Mycroft Stop Function
